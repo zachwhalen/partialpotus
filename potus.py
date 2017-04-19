@@ -37,10 +37,12 @@ def get_polls():
 
 	return polls
 
-
+# the text transformation part
 def transform(status,polls):
 	# status is a status object from twitter
 	# polls is a list of approve,disapprove,undecided as floats
+
+	rate = polls[0]
 
 	# total_length is how long the message is -- for math purposes
 	total_length = len(status.text)	
@@ -64,6 +66,12 @@ def transform(status,polls):
 	new_status = 'ⓐ🅿🅾🆃🆄🆂:' + ('█' * padleft) + keep_string + ('█' * padright)
 
 	return new_status
+
+polls = get_polls()
+status = tw_api.get_status(854402046367326210)
+
+new_status = transform(status,polls)
+print(new_status)
 
 # # for testing
 # status = tw_api.get_status(854402046367326210)
@@ -97,21 +105,7 @@ def transform(status,polls):
 
 
 
-def get_polls():
-	p_api = pollster.Api()
-	chart = p_api.charts_slug_get('donald-trump-favorable-rating')
 
-	approve = chart.pollster_estimates[0].values['hash']['Favorable']
-	disapprove = chart.pollster_estimates[0].values['hash']['Unfavorable']
-	undecided = chart.pollster_estimates[0].values['hash']['Undecided']
-
-	polls = [approve,disapprove,undecided]
-
-	return polls
-
-polls = get_polls()
-
-print(polls)
 # Streaming Stuff:
 
 # class StdOutListener(StreamListener):

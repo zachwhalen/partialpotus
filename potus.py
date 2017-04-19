@@ -14,28 +14,59 @@ from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
 from tweepy import Stream
 
-
-with open('cred.txt') as f:
-	cred = f.read().splitlines()
-
+# set up Twitter access
+cred = open("cred.txt").read().splitlines()
 consumer_key = cred[0]
 consumer_secret = cred[1]
 access_token = cred[2]
 access_token_secret = cred[3]
-
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
-
 tw_api = tweepy.API(auth)
 
-# STREAMING STUFF
+# get the current polling as a list
+def get_polls():
+	p_api = pollster.Api()
+	chart = p_api.charts_slug_get('donald-trump-favorable-rating')
+
+	approve = chart.pollster_estimates[0].values['hash']['Favorable']
+	disapprove = chart.pollster_estimates[0].values['hash']['Unfavorable']
+	undecided = chart.pollster_estimates[0].values['hash']['Undecided']
+
+	polls = [approve,disapprove,undecided]
+
+	return polls
 
 
+def transform(status,polls):
+	# status is a status object from twitter
+	# polls is a list of approve,disapprove,undecided as floats
 
+	# total_length is how long the message is -- for math purposes
+	total_length = len(status.text)	
 
+	# keep_length is how many letters will remain in the transformed tweet
+	keep_length = int(total_length * (rate / 100.0))
+
+	# redact_length is the difference, which is convenient
+	redact_length = total_length - keep_length
+
+	# picks an in and out point for the kept slice
+	start = randint(0,redact_length)
+	end = start + keep_length
+
+	# get that slace as keep_string
+	keep_string = status.text.encode('utf-8')[start:end]
+	
+	# pad it appropriately
+	padleft = start
+	padright = total_length - end
+	new_status = 'ⓐ🅿🅾🆃🆄🆂:' + ('█' * padleft) + keep_string + ('█' * padright)
+
+	return new_status
 
 # # for testing
-status = tw_api.get_status(854402046367326210)
+# status = tw_api.get_status(854402046367326210)
 # rate = 20.0
 
 
